@@ -13,6 +13,28 @@ from mindcv.optim import create_optimizer
 from mindcv.scheduler import create_scheduler
 from mindcv.utils import AllReduceSum, StateMonitor, create_trainer, get_metrics, set_seed
 
+
+class StopAtStep(ms.Callback):
+    def __init__(self, start_step, stop_step, output_path):
+        super(StopAtStep, self).__init__()
+        self.start_step = start_step
+        self.stop_step = stop_step
+        self.profiler = ms.Profiler(start_profile=False, output_path=output_path)
+
+    def step_begin(self, run_context):
+        cb_params = run_context.original_args()
+        step_num = cb_params.cur_step_num
+        if step_num == self.start_step:
+            self.profiler.start()
+
+    def step_end(self, run_context):
+        cb_params = run_context.original_args()
+        step_num = cb_params.cur_step_num
+        if step_num == self.stop_step:
+            self.profiler.stop()
+            self.profiler.analyse()
+
+
 from config import parse_args  # isort: skip
 
 # TODO: arg parser already has a logger
@@ -259,8 +281,12 @@ def train(args):
         ema=args.ema,
         dataset_sink_mode=args.dataset_sink_mode,
     )
-
-    callbacks = [state_cb]
+    if args.profile:
+        profile_dir = f"./{args.ckpt_save_dir}/{args.model}/"
+        step_cb = StopAtStep(args.start_step, args.stop_step, profile_dir)
+        callbacks = [state_cb, step_cb]
+    else:
+        callbacks = [state_cb]
     # log
     if rank_id in [None, 0]:
         logger.info("-" * 40)

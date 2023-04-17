@@ -160,6 +160,11 @@ def create_parser():
                        help='Whether use clip grad (default=False)')
     group.add_argument('--clip_value', type=float, default=15.0,
                        help='Clip value (default=15.0)')
+    group.add_argument('--profile', type=str2bool, nargs='?', const=True, default=False)
+    group.add_argument('--start_step', type=int, default=100)
+    group.add_argument('--stop_step', type=int, default=200)
+    group.add_argument('--clip_value', type=float, default=15.0,
+                       help='Clip value (default=15.0)')
 
     # Optimize parameters
     group = parser.add_argument_group('Optimizer parameters')
@@ -248,6 +253,8 @@ def create_parser():
                        help='model folder to save/load')
 
     return parser_config, parser
+
+
 # fmt: on
 
 
