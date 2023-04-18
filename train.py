@@ -35,6 +35,27 @@ class StopAtStep(ms.Callback):
             self.profiler.analyse()
 
 
+class StopAtEpoch(ms.Callback):
+    def __init__(self, start_epoch, stop_epoch, output_path):
+        super(StopAtEpoch, self).__init__()
+        self.start_epoch = start_epoch
+        self.stop_epoch = stop_epoch
+        self.profiler = ms.Profiler(start_profile=False, output_path=output_path)
+
+    def epoch_begin(self, run_context):
+        cb_params = run_context.original_args()
+        epoch_num = cb_params.cur_epoch_num
+        if epoch_num == self.start_epoch:
+            self.profiler.start()
+
+    def epoch_end(self, run_context):
+        cb_params = run_context.original_args()
+        epoch_num = cb_params.cur_epoch_num
+        if epoch_num == self.stop_epoch:
+            self.profiler.stop()
+            self.profiler.analyse()
+
+
 from config import parse_args  # isort: skip
 
 # TODO: arg parser already has a logger
@@ -282,9 +303,14 @@ def train(args):
         dataset_sink_mode=args.dataset_sink_mode,
     )
     if args.profile:
-        profile_dir = f"./{args.ckpt_save_dir}/{args.model}/"
-        step_cb = StopAtStep(args.start_step, args.stop_step, profile_dir)
-        callbacks = [state_cb, step_cb]
+        if args.prof_mode == "epoch":
+            profile_dir = f"./{args.ckpt_save_dir}/{args.model}_{args.stop-args.start}_epoch/"
+            epoch_cb = StopAtStep(args.start, args.stop, profile_dir)
+            callbacks = [state_cb, epoch_cb]
+        else:
+            profile_dir = f"./{args.ckpt_save_dir}/{args.model}_{args.stop-args.start}_step/"
+            step_cb = StopAtStep(args.start, args.stop, profile_dir)
+            callbacks = [state_cb, step_cb]
     else:
         callbacks = [state_cb]
     # log

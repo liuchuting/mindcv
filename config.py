@@ -161,10 +161,9 @@ def create_parser():
     group.add_argument('--clip_value', type=float, default=15.0,
                        help='Clip value (default=15.0)')
     group.add_argument('--profile', type=str2bool, nargs='?', const=True, default=False)
-    group.add_argument('--start_step', type=int, default=100)
-    group.add_argument('--stop_step', type=int, default=200)
-    group.add_argument('--clip_value', type=float, default=15.0,
-                       help='Clip value (default=15.0)')
+    group.add_argument('--prof_mode', type=str, default="epoch")
+    group.add_argument('--start', type=int, default=1)
+    group.add_argument('--stop', type=int, default=2)
 
     # Optimize parameters
     group = parser.add_argument_group('Optimizer parameters')
