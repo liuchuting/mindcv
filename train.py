@@ -305,7 +305,7 @@ def train(args):
     if args.profile:
         if args.prof_mode == "epoch":
             profile_dir = f"./{args.ckpt_save_dir}/{args.model}_{args.start}-{args.stop}_epoch/"
-            epoch_cb = StopAtStep(args.start, args.stop, profile_dir)
+            epoch_cb = StopAtEpoch(args.start, args.stop, profile_dir)
             callbacks = [state_cb, epoch_cb]
         else:
             profile_dir = f"./{args.ckpt_save_dir}/{args.model}_{args.start}-{args.stop}_step/"
